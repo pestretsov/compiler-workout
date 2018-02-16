@@ -6,7 +6,8 @@
 open GT
 
 (* The type for the expression. Note, in regular OCaml there is no "@type..."
-   notation, it came from GT. *)
+   notation, it came from GT.
+*)
 @type expr =
   (* integer constant *) | Const of int
   (* variable         *) | Var   of string
@@ -47,7 +48,7 @@ let s = update "x" 1 @@ update "y" 2 @@ update "z" 3 @@ update "t" 4 empty
 
      val eval : state -> expr -> int
 
-   Takes a state and an expression, andreturns the value of the expression in
+   Takes a state and an expression, and returns the value of the expression in
    the given state.
 *)
 

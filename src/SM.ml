@@ -30,8 +30,7 @@ let eval_inst cnf inst =
      begin
        match st with
        | y :: x :: tail ->
-          let binop_expr = Syntax.Expr.Binop(op, Syntax.Expr.Const x, Syntax.Expr.Const y) in
-          ((Syntax.Expr.eval s binop_expr) :: tail, (s, i, o))
+          ((Syntax.Expr.eval_binop op x y) :: tail, (s, i, o))
        | _ -> failwith "cannot perform BINOP"
      end
   | CONST c -> (c :: st, (s, i, o))
@@ -47,12 +46,12 @@ let eval_inst cnf inst =
        | x :: tail -> (tail, (s, i, o @ [x]))
        | _ -> failwith "cannot perform WRITE"
      end
-  | LD x -> ((s x)::st, (s, i, o))
+  | LD x -> ((s x) :: st, (s, i, o))
   | ST x ->
      begin
        match st with
        | z :: tail -> (tail, ((Syntax.Expr.update x z s), i, o))
-       | _ -> failwith "cannot perform store"
+       | _ -> failwith "cannot perform ST"
      end
 
 let rec eval cnf prg =
@@ -80,11 +79,11 @@ let rec compile_expr expr =
   match expr with
   | Syntax.Expr.Var x -> [LD x]
   | Syntax.Expr.Const c -> [CONST c]
-  | Syntax.Expr.Binop (op, e1, e2) -> compile_expr e1 @ compile_expr e2 @ [BINOP op]
+  | Syntax.Expr.Binop (op, e1, e2) -> (compile_expr e1) @ (compile_expr e2) @ [BINOP op]
 
 let rec compile stm =
   match stm with
-  | Syntax.Stmt.Assign (x, e) -> compile_expr e @ [ST x]
+  | Syntax.Stmt.Assign (x, e) -> (compile_expr e) @ [ST x]
   | Syntax.Stmt.Read x -> [READ] @ [ST x]
-  | Syntax.Stmt.Write e -> compile_expr e @ [WRITE]
-  | Syntax.Stmt.Seq (s1, s2) -> compile s1 @ compile s2
+  | Syntax.Stmt.Write e -> (compile_expr e) @ [WRITE]
+  | Syntax.Stmt.Seq (s1, s2) -> (compile s1) @ (compile s2)

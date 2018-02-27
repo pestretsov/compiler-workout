@@ -40,30 +40,30 @@ module Expr =
 
        Takes a state and an expression, and returns the value of the expression in
        the given state.
-    *)
+     *)
+    let eval_binop op l r =
+      let bool_to_int b = if b then 1 else 0 in
+      match op with
+      | "+"  -> l + r
+      | "-"  -> l - r
+      | "*"  -> l * r
+      | "/"  -> l / r
+      | "%"  -> l mod r
+      | "<"  -> bool_to_int (l < r)
+      | ">"  -> bool_to_int (l > r)
+      | ">=" -> bool_to_int (l >= r)
+      | "<=" -> bool_to_int (l <= r)
+      | "==" -> bool_to_int (l = r)
+      | "!=" -> bool_to_int (l <> r)
+      | "&&" -> bool_to_int (l <> 0 && r <> 0)
+      | "!!" -> bool_to_int (l <> 0 || r <> 0)
+      | _    -> failwith "this operation is not supported"
+
     let rec eval s e =
       match e with
       | Var v -> s v
       | Const c -> c
-      | Binop (op, e1, e2) ->
-         let l = eval s e1
-         and r = eval s e2
-         and boolToInt b = if b then 1 else 0 in
-         match op with
-         | "+"  -> l + r
-         | "-"  -> l - r
-         | "*"  -> l * r
-         | "/"  -> l / r
-         | "%"  -> l mod r
-         | "<"  -> boolToInt (l < r)
-         | ">"  -> boolToInt (l > r)
-         | ">=" -> boolToInt (l >= r)
-         | "<=" -> boolToInt (l <= r)
-         | "==" -> boolToInt (l = r)
-         | "!=" -> boolToInt (l <> r)
-         | "&&" -> boolToInt (l <> 0 && r <> 0)
-         | "!!" -> boolToInt (l <> 0 || r <> 0)
-         | _    -> failwith "this operation is not supported"
+      | Binop (op, e1, e2) -> eval_binop op (eval s e1) (eval s e2)
 
   end
 (* Simple statements: syntax and sematics *)
@@ -89,7 +89,12 @@ module Stmt =
     let rec eval cnf stm =
       let (s, i, o) = cnf in
       match stm with
-      | Read x -> (Expr.update x (List.hd i) s, (List.tl i), o)
+      | Read x ->
+         begin
+           match i with
+           | z :: tail -> (Expr.update x z s, tail, o)
+           | _ -> failwith "cannot perform Read"
+         end
       | Write e -> (s, i, o @ [Expr.eval s e])
       | Assign (x, e) -> (Expr.update x (Expr.eval s e) s, i, o)
       | Seq (s1, s2) -> eval (eval cnf s1) s2

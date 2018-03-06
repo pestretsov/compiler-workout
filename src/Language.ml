@@ -75,6 +75,7 @@ module Expr =
 
      *)
     let create_binop op = fun x y -> Binop(op, x, y)
+    let parse_op_list ops = List.map (fun op -> ostap ($(op)), create_binop op) ops
 
     ostap (
       parse: expr;
@@ -82,19 +83,11 @@ module Expr =
         !(Ostap.Util.expr
             (fun x -> x)
             [|
-              `Lefta, [ostap ("!!"), create_binop("!!");];
-              `Lefta, [ostap ("&&"), create_binop("&&");];
-              `Nona , [ostap (">="), create_binop(">=");
-                       ostap (">" ), create_binop(">" );
-                       ostap ("<="), create_binop("<=");
-                       ostap ("<" ), create_binop("<" );
-                       ostap ("!="), create_binop("!=");
-                       ostap ("=="), create_binop("==");];
-              `Lefta, [ostap ("+" ), create_binop("+" );
-                       ostap ("-" ), create_binop("-" );];
-              `Lefta, [ostap ("*" ), create_binop("*" );
-                       ostap ("/" ), create_binop("/" );
-                       ostap ("%" ), create_binop("%" );];
+              `Lefta, parse_op_list ["!!"];
+              `Lefta, parse_op_list ["&&"];
+              `Nona , parse_op_list [">="; ">"; "<="; "<"; "!="; "=="];
+              `Lefta, parse_op_list ["+"; "-"];
+              `Lefta, parse_op_list ["*"; "/"; "%"];
             |]
             primary
           );

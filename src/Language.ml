@@ -73,9 +73,32 @@ module Expr =
          IDENT   --- a non-empty identifier a-zA-Z[a-zA-Z0-9_]* as a string
          DECIMAL --- a decimal constant [0-9]+ as a string
 
-    *)
+     *)
+    let create_binop op = fun x y -> Binop(op, x, y)
+
     ostap (
-      parse: empty {failwith "Not implemented yet"}
+      parse: expr;
+      expr:
+        !(Ostap.Util.expr
+            (fun x -> x)
+            [|
+              `Lefta, [ostap ("!!"), create_binop("!!");];
+              `Lefta, [ostap ("&&"), create_binop("&&");];
+              `Nona , [ostap (">="), create_binop(">=");
+                       ostap (">" ), create_binop(">" );
+                       ostap ("<="), create_binop("<=");
+                       ostap ("<" ), create_binop("<" );
+                       ostap ("!="), create_binop("!=");
+                       ostap ("=="), create_binop("==");];
+              `Lefta, [ostap ("+" ), create_binop("+" );
+                       ostap ("-" ), create_binop("-" );];
+              `Lefta, [ostap ("*" ), create_binop("*" );
+                       ostap ("/" ), create_binop("/" );
+                       ostap ("%" ), create_binop("%" );];
+            |]
+            primary
+          );
+      primary: x:IDENT { Var x } | n:DECIMAL { Const n } | -"(" expr -")"
     )
 
   end
@@ -115,9 +138,13 @@ module Stmt =
 
     (* Statement parser *)
     ostap (
-      parse: empty {failwith "Not implemented yet"}
+      parse : seq | stmt;
+      stmt  : read | write | assign;
+      read  : "read" -"(" x:IDENT -")" { Read x };
+      write : "write" -"(" e:!(Expr.parse) -")" { Write e };
+      assign: x:IDENT -":=" e:!(Expr.parse) { Assign (x, e) };
+      seq   : s1:stmt -";" s2:parse { Seq(s1, s2) }
     )
-
   end
 
 (* The top-level definitions *)

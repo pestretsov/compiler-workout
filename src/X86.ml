@@ -141,8 +141,6 @@ let rec compile env = function
      let (res_env, res_asm_instr) = compile env code in
      res_env, asm_instr @ res_asm_instr
 
-let compile env code = failwith "Not yet implemented"
-
 (* A set of strings *)
 module S = Set.Make (String)
 

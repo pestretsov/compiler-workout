@@ -134,16 +134,12 @@ module Stmt =
       | Assign (x, e) -> (Expr.update x (Expr.eval st e) st, i, o)
       | Seq (s1, s2) -> eval (eval cnf s1) s2
       | Skip -> cnf
-      | If (e, s1, s2) -> if Expr.eval st e != 0
-                          then eval cnf s1
-                          else eval cnf s2
-      | While (e, s)   -> if Expr.eval st e != 0
-                          then eval (eval cnf s) stmt
-                          else cnf
-      | RepeatUntil (e, s) -> let (st', i', o') as cnf' = eval cnf s in
-                                if Expr.eval st' e != 0
-                                then eval cnf' stmt
-                                else cnf'
+      | If (e, s1, s2) -> eval cnf (if Expr.eval st e != 0 then s1 else s2)
+      | While (e, s) ->
+        if Expr.eval st e != 0 then eval (eval cnf s) stmt else cnf
+      | RepeatUntil (e, s) ->
+        let ((st', _, _) as cnf') = eval cnf s in
+        if Expr.eval st' e = 0 then eval cnf' stmt else cnf'
     (* Statement parser *)
     ostap (
       parse  : seq | stmt;

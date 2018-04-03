@@ -31,7 +31,6 @@ type config = int list * Stmt.config
 let rec eval env ((stack, ((st, i, o) as c)) as conf) = function
   | [] -> conf
   | inst :: prog_tail ->
-     begin
        match inst with
        | BINOP op ->
           begin
@@ -40,7 +39,7 @@ let rec eval env ((stack, ((st, i, o) as c)) as conf) = function
                eval env ((Expr.eval_binop op x y) :: tail, c) prog_tail
             | _ -> failwith "cannot perform BINOP"
           end
-       | CONST v -> (v :: stack, c)
+       | CONST v -> eval env (v :: stack, c) prog_tail
        | READ ->
           begin
             match i with
@@ -70,7 +69,6 @@ let rec eval env ((stack, ((st, i, o) as c)) as conf) = function
                            else eval env (tail, c) prog_tail
             | _ -> failwith "stack is empty"
           end
-     end
 
 (* Top-level evaluation
 

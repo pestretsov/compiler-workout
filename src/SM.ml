@@ -37,27 +37,27 @@ let rec eval env ((stack, ((st, i, o) as c)) as conf) = function
           begin
             match stack with
             | y :: x :: tail ->
-               ((Expr.eval_binop op x y) :: tail, c)
+               eval env ((Expr.eval_binop op x y) :: tail, c) prog_tail
             | _ -> failwith "cannot perform BINOP"
           end
        | CONST v -> (v :: stack, c)
        | READ ->
           begin
             match i with
-            | x :: tail -> (x :: stack, (st, tail, o))
+            | x :: tail -> eval env (x :: stack, (st, tail, o)) prog_tail
             | _ -> failwith "cannot perform READ"
           end
        | WRITE ->
           begin
             match stack with
-            | x :: tail -> (tail, (st, i, o @ [x]))
+            | x :: tail -> eval env (tail, (st, i, o @ [x])) prog_tail
             | _ -> failwith "cannot perform WRITE"
           end
-       | LD x -> ((st x) :: stack, c)
+       | LD x -> eval env ((st x) :: stack, c) prog_tail
        | ST x ->
           begin
             match stack with
-            | z :: tail -> (tail, ((Expr.update x z st), i, o))
+            | z :: tail -> eval env (tail, ((Expr.update x z st), i, o)) prog_tail
             | _ -> failwith "cannot perform ST"
           end
        | LABEL l -> eval env conf prog_tail

@@ -125,4 +125,4 @@ let rec compile stm =
      [LABEL l_expr] @ (compile_expr e) @ [CJMP ("z", l_od)] @ (compile s) @ [JMP l_expr] @ [LABEL l_od]
   | Stmt.RepeatUntil (e, s) ->
      let l_repeat = label_generator#generate in
-     [LABEL l_repeat] @ (compile s) @ (compile_expr e) @ [CJMP ("nz", l_repeat)]
+     [LABEL l_repeat] @ (compile s) @ (compile_expr e) @ [CJMP ("z", l_repeat)]

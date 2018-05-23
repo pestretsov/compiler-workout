@@ -115,7 +115,8 @@ let compile env code =
     let on_stack = function S _ -> true | _ -> false in
     let call env f n p =
       let f =
-        match f.[0] with '.' -> "B" ^ String.sub f 1 (String.length f - 1) | _ -> f
+        match f.[1] with '.' -> "B" ^ String.sub f 2 (String.length f - 2) | _ -> (
+          match f.[0] with '.' -> "B" ^ String.sub f 1 (String.length f - 1) | _ -> f)
       in
       let pushr, popr =
         List.split @@ List.map (fun r -> (Push r, Pop r)) (env#live_registers n)
